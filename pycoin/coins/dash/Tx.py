@@ -92,10 +92,11 @@ class Tx(BaseTx):
                     stack.append(parse_satoshi_string(f))
                 tx_in.witness = stack
         lock_time, = parse_struct("L", f)
-        if version & 0xFFFF >= 3 and (version >> 16) & 0xFFFF != 0:
-            # Extra payload size is VarInt
+
+        if (version & 0xFFFF) >= 3 and (version >> 16) & 0xFFFF != 0:
             extraPayloadSize = parse_satoshi_int(f)
             extraPayload = f.read(extraPayloadSize)
+
         return class_(version, txs_in, txs_out, lock_time, None, extraPayload)
 
     @classmethod
@@ -124,7 +125,7 @@ class Tx(BaseTx):
         self.txs_out = txs_out
         self.lock_time = lock_time
         self.unspents = unspents or []
-        self.extraPayload = extraPayload or []
+        self.extraPayload = extraPayload
         for tx_in in self.txs_in:
             assert type(tx_in) == self.TxIn
         for tx_out in self.txs_out:
@@ -158,10 +159,9 @@ class Tx(BaseTx):
                 for w in witness:
                     stream_satoshi_string(f, w)
         stream_struct("L", f, self.lock_time)
-        if version & 0xFFFF >= 3 and (version >> 16) & 0xFFFF != 0:
-            # Extra payload size is VarInt
-            stream_satoshi_int(f, len(extraPayload))
-            f.write(extraPayload)
+        if self.dash_version() >= 3 and self.dash_type() != 0 and self.extraPayload != None:
+            stream_satoshi_int(f, len(self.extraPayload))
+            f.write(self.extraPayload)
         if include_unspents and not self.missing_unspents():
             self.stream_unspents(f)
 
