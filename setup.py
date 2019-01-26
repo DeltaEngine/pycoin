@@ -16,6 +16,7 @@ setup(
         "pycoin.coins.bgold",
         "pycoin.coins.bitcoin",
         "pycoin.coins.litecoin",
+        "pycoin.coins.dash",
         "pycoin.contrib",
         "pycoin.convention",
         "pycoin.ecdsa",
